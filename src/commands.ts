@@ -28,18 +28,18 @@ type Transform = (
   document: vscode.TextDocument
 ) => string | null;
 
-const transformSelectedLines = async ( transform: Transform ): Promise<void> => {
+const transformSelectedLines = async ( transform: Transform ): Promise<boolean> => {
 
   const textEditor = vscode.window.activeTextEditor;
 
-  if ( !textEditor ) return;
-  if ( textEditor.document.languageId !== 'markdown' ) return;
+  if ( !textEditor ) return false;
+  if ( textEditor.document.languageId !== 'markdown' ) return false;
 
   const document = textEditor.document;
   const linesNr = uniq ( textEditor.selections.map ( getSelectionRange ).flat ().sort () );
   const lines = linesNr.map ( lineNr => document.lineAt ( lineNr ) );
 
-  if ( !lines.length ) return;
+  if ( !lines.length ) return false;
 
   const edits: vscode.TextEdit[] = [];
 
@@ -53,15 +53,18 @@ const transformSelectedLines = async ( transform: Transform ): Promise<void> => 
 
   }
 
-  if ( !edits.length ) return;
+  if ( !edits.length ) return false;
 
   const applied = await Edits.apply ( textEditor, edits );
 
   if ( !applied ) {
 
     await vscode.window.showErrorMessage ( 'Markdown Todo could not apply the requested edit.' );
+    return false;
 
   }
+
+  return true;
 
 };
 
@@ -70,6 +73,29 @@ const getEntry = ( line: string ): Entry | null => {
   const normalized = normalizeInput ( line.trim () );
 
   return normalized?.type === 'entry' ? normalized.entry : null;
+
+};
+
+const getEmptyListEntry = ( line: string ): Entry | null => {
+
+  const listMatch = line.match ( /^\s*[*+-]\s+(.*)$/ );
+
+  if ( !listMatch ) return null;
+
+  const content = listMatch[1];
+  const taskMatch = content.match ( /^\[([ /xX>\-])\]\s*$/ );
+
+  if ( taskMatch ) {
+
+    const parsed = parseEntry ( `${line}placeholder` );
+
+    return parsed ? {...parsed, text: ''} : null;
+
+  }
+
+  return content.trim ()
+    ? null
+    : {type: EntryType.Note, text: '', details: []};
 
 };
 
@@ -91,6 +117,41 @@ const transformEntry = ( transform: ( entry: Entry ) => Entry ): Transform => li
 
 };
 
+const transformSelectedLinesAndFocusBlankEntry = async ( transform: Transform ): Promise<void> => {
+
+  const textEditor = vscode.window.activeTextEditor;
+
+  if ( !textEditor || textEditor.document.languageId !== 'markdown' ) return;
+
+  const blankActiveLines = new Set (
+    textEditor.selections
+      .map ( selection => selection.active.line )
+      .filter ( lineNumber => {
+
+        const line = textEditor.document.lineAt ( lineNumber ).text;
+
+        return !line.trim () || Boolean ( getEmptyListEntry ( line ) );
+
+      } )
+  );
+
+  const applied = await transformSelectedLines ( transform );
+
+  if ( !applied || !blankActiveLines.size ) return;
+
+  textEditor.selections = textEditor.selections.map ( selection => {
+
+    if ( !blankActiveLines.has ( selection.active.line ) ) return selection;
+
+    const line = textEditor.document.lineAt ( selection.active.line );
+    const position = new vscode.Position ( line.lineNumber, line.text.length );
+
+    return new vscode.Selection ( position, position );
+
+  } );
+
+};
+
 const toggleDone = async (): Promise<void> => {
 
   await transformSelectedLines ( transformEntry ( toggleDoneEntry ) );
@@ -99,7 +160,16 @@ const toggleDone = async (): Promise<void> => {
 
 const toggleTodo = async (): Promise<void> => {
 
-  await transformSelectedLines ( transformEntry ( toggleTask ) );
+  await transformSelectedLinesAndFocusBlankEntry ( line => {
+
+    const entry = getEntry ( line ) ?? getEmptyListEntry ( line );
+
+    if ( entry ) return renderForLine ( toggleTask ( entry ), line );
+    if ( line.trim () ) return null;
+
+    return renderForLine ( makeTask ( {type: EntryType.Note, text: '', details: []} ), line );
+
+  } );
 
 };
 
@@ -107,9 +177,9 @@ const decrease = async (): Promise<void> => {
 
   let hasAttachedDetails = false;
 
-  await transformSelectedLines ( ( line, lineNumber, document ) => {
+  await transformSelectedLinesAndFocusBlankEntry ( ( line, lineNumber, document ) => {
 
-    const entry = parseEntry ( line ) ?? getEntry ( line );
+    const entry = parseEntry ( line ) ?? getEntry ( line ) ?? getEmptyListEntry ( line );
 
     if ( !entry ) return null;
 
@@ -153,13 +223,19 @@ const decrease = async (): Promise<void> => {
 
 const increase = async (): Promise<void> => {
 
-  await transformSelectedLines ( line => {
+  await transformSelectedLinesAndFocusBlankEntry ( line => {
 
     const parsed = parseEntry ( line );
-    const entry = parsed ?? getEntry ( line );
+    const emptyEntry = getEmptyListEntry ( line );
+    const entry = parsed ?? getEntry ( line ) ?? emptyEntry;
 
-    if ( !entry ) return null;
-    if ( !parsed && entry.type === EntryType.Note ) {
+    if ( !entry ) {
+
+      return line.trim () ? null : renderForLine ( {type: EntryType.Note, text: '', details: []}, line );
+
+    }
+
+    if ( !parsed && entry.type === EntryType.Note && !emptyEntry ) {
 
       return renderForLine ( makeNote ( entry ), line );
 
@@ -173,7 +249,16 @@ const increase = async (): Promise<void> => {
 
 const makeTaskCommand = async (): Promise<void> => {
 
-  await transformSelectedLines ( transformEntry ( makeTask ) );
+  await transformSelectedLinesAndFocusBlankEntry ( line => {
+
+    const entry = getEntry ( line );
+
+    if ( entry ) return renderForLine ( makeTask ( entry ), line );
+    if ( line.trim () ) return null;
+
+    return renderForLine ( makeTask ( {type: EntryType.Note, text: '', details: []} ), line );
+
+  } );
 
 };
 
@@ -197,7 +282,16 @@ const makeImportantCommand = async (): Promise<void> => {
 
 const makeEventCommand = async (): Promise<void> => {
 
-  await transformSelectedLines ( transformEntry ( makeEvent ) );
+  await transformSelectedLinesAndFocusBlankEntry ( line => {
+
+    const entry = getEntry ( line ) ?? getEmptyListEntry ( line );
+
+    if ( entry ) return renderForLine ( makeEvent ( entry ), line );
+    if ( line.trim () ) return null;
+
+    return renderForLine ( makeEvent ( {type: EntryType.Note, text: '', details: []} ), line );
+
+  } );
 
 };
 
@@ -264,16 +358,36 @@ const makeDetail = async (): Promise<void> => {
   const document = textEditor.document;
   const linesNr = uniq ( textEditor.selections.map ( getSelectionRange ).flat ().sort () );
   const edits: vscode.TextEdit[] = [];
+  const blankLines = new Set<number> ();
   let hasInvalidParent = false;
 
   for ( const lineNumber of linesNr ) {
 
     const line = document.lineAt ( lineNumber );
+
+    if ( !line.text.trim () ) {
+
+      const lineNextText = hasAdjacentParent ( document, lineNumber )
+        ? renderDetail ( '' )
+        : renderForLine ( {type: EntryType.Note, text: '', details: []}, line.text );
+
+      edits.push ( vscode.TextEdit.replace ( line.range, lineNextText ) );
+      blankLines.add ( lineNumber );
+
+      continue;
+
+    }
+
     const normalized = normalizeInput ( line.text );
     const detailText = normalized?.type === 'detail'
       ? normalized.text
       : normalized?.type === 'entry'
-        ? normalized.entry.text
+        ? normalized.entry.type === EntryType.Note
+          ? normalized.entry.text
+          : renderEntryLine ( normalized.entry, {
+            bullet: line.text.match ( /^\s*([*+-])\s+/ )?.[1] ?? getOptions ().symbols.bullet,
+            done: getOptions ().symbols.done
+          } )
         : '';
 
     if ( !detailText ) continue;
@@ -288,7 +402,7 @@ const makeDetail = async (): Promise<void> => {
 
     const lineNextText = renderDetail ( detailText );
 
-    edits.push ( ...Edits.makeDiff ( line.text, lineNextText, lineNumber ) );
+    edits.push ( vscode.TextEdit.replace ( line.range, lineNextText ) );
 
   }
 
@@ -305,6 +419,22 @@ const makeDetail = async (): Promise<void> => {
   if ( !applied ) {
 
     await vscode.window.showErrorMessage ( 'Markdown Todo could not apply the requested edit.' );
+    return;
+
+  }
+
+  if ( blankLines.size ) {
+
+    textEditor.selections = textEditor.selections.map ( selection => {
+
+      if ( !blankLines.has ( selection.active.line ) ) return selection;
+
+      const line = document.lineAt ( selection.active.line );
+      const position = new vscode.Position ( line.lineNumber, line.text.length );
+
+      return new vscode.Selection ( position, position );
+
+    } );
 
   }
 

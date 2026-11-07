@@ -23,11 +23,11 @@ It adds these commands to the command palette:
 'Markdown Todo: Toggle Done' // Toggle a todo as done
 'Markdown Todo: Decrease' // Move a line toward plain text through the task-state sequence
 'Markdown Todo: Increase' // Move a line toward canceled through the task-state sequence
-'Markdown Todo: Make Task' // Make the selected line an open task
+'Markdown Todo: Make Task' // Make the selected line (or blank line) an open task
 'Markdown Todo: Make Note' // Make the selected line a note
 'Markdown Todo: Make Question' // Make the selected line a question
 'Markdown Todo: Make Important' // Mark the selected line as important
-'Markdown Todo: Make Event' // Mark the selected line as an event
+'Markdown Todo: Make Event' // Make the selected line (or blank line) an event
 'Markdown Todo: Make Detail' // Attach the selected line as a supporting detail to the preceding entry
 'Markdown Todo: Normalize Entry' // Normalize a quick-entry marker into canonical Markdown
 ```
@@ -47,15 +47,20 @@ Canonical entries use Markdown list items:
   › A supporting detail attached to the preceding entry
 ```
 
-The parser also recognizes existing marker-only task and typed entries. Supporting details belong to a parent entry and are not standalone entries. Quick markers can be placed at the start or end of a line; trailing type markers must be separated from the text, so ordinary punctuation such as `What?` is preserved.
+The parser also recognizes existing marker-only task and typed entries. Supporting details belong to a parent entry and are not standalone entries. Use **Make Detail** to indent a selected line under its preceding entry; task, question, and important markers are preserved in the detail. On a blank line, **Make Detail** creates an empty detail under a valid preceding entry, or a note entry when there is no parent. A hyphen-prefixed line remains its own entry unless you explicitly run **Make Detail** on it. Quick markers can be placed at the start or end of a line; trailing type markers must be separated from the text, so ordinary punctuation such as `What?` is preserved.
 
-It adds 3 shortcuts when editing a `Markdown` file:
+It adds these shortcuts when editing a `Markdown` file:
 
 ```js
 'Cmd/Ctrl+Enter' // Triggers `Markdown Todo: Toggle Todo`
 'Alt+Enter' // Triggers `Markdown Todo: Toggle Todo`
 'Alt+D' // Triggers `Markdown Todo: Toggle Done`
+'Option+Up' // Triggers `Markdown Todo: Increase` on macOS
+'Option+Down' // Triggers `Markdown Todo: Decrease` on macOS
+'Cmd+Shift+Enter' // Triggers `Markdown Todo: Make Detail` on macOS
 ```
+
+On an empty line, `Cmd/Ctrl+Enter` or `Markdown Todo: Make Task` creates a new open task. **Make Event** creates an event marker, ready for text. **Increase** on an empty line creates a note; pressing it again cycles that empty note to an open task. The Make Detail shortcut creates a detail under its preceding entry, or a note when no parent is present.
 
 ## Settings
 

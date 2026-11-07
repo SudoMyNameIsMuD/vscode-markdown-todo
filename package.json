@@ -98,6 +98,22 @@
         "command": "markdown.todo.toggleDone",
         "key": "Alt+d",
         "when": "editorTextFocus && editorLangId == markdown"
+      },
+      {
+        "command": "markdown.todo.increase",
+        "key": "Alt+Up",
+        "when": "editorTextFocus && editorLangId == markdown"
+      },
+      {
+        "command": "markdown.todo.decrease",
+        "key": "Alt+Down",
+        "when": "editorTextFocus && editorLangId == markdown"
+      },
+      {
+        "command": "markdown.todo.makeDetail",
+        "key": "Ctrl+Shift+Enter",
+        "mac": "Cmd+Shift+Enter",
+        "when": "editorTextFocus && editorLangId == markdown"
       }
     ],
     "menus": {
@@ -182,7 +198,7 @@
   "devDependencies": {
     "@types/diff": "^5.0.9",
     "@types/vscode": "^1.87.0",
-    "esbuild": "0.20.2",
+    "esbuild": "^0.28.2",
     "scex": "^1.1.0",
     "tsex": "^3.2.1",
     "typescript": "^5.4.2"

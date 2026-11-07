@@ -33,6 +33,21 @@ test('parses and renders canonical entries and attached details', () => {
   );
 });
 
+test('preserves task and typed-entry markers inside attached details', () => {
+  const markdown = [
+    '- Parent entry',
+    '  › - [ ] Open task detail',
+    '  › - [x] Completed task detail',
+    '  › - ? Question detail',
+    '  › - ! Important detail'
+  ].join('\n');
+
+  assert.equal (
+    parseEntries ( markdown ).map ( renderEntry ).join ( '\n' ),
+    markdown
+  );
+});
+
 test('parses legacy marker-only tasks and typed entries', () => {
   const sources = [
     '[ ] Open task',
@@ -115,6 +130,11 @@ test('normalizes leading and trailing quick-entry markers without eating punctua
 
 test('renders canonical task markers and respects configured bullet/done symbols', () => {
   assert.equal ( renderEntryLine ( task ( TaskState.Open ) ), '- [ ] Review drawings' );
+  assert.equal ( renderEntryLine ( task ( TaskState.Open, '' ) ), '- [ ] ' );
+  assert.equal (
+    renderEntryLine ( {type: EntryType.Event, text: '', details: []} ),
+    '- @ '
+  );
   assert.equal (
     renderEntryLine ( task ( TaskState.Done ), {bullet: '*', done: 'X'} ),
     '* [X] Review drawings'
@@ -123,10 +143,43 @@ test('renders canonical task markers and respects configured bullet/done symbols
 
 test('task transitions retain attached details', () => {
   const entry = task ( TaskState.Open, 'Review drawings', ['Verify dimensions'] );
+  const emptyNote = {type: EntryType.Note, text: '', details: []};
+  const emptyTask = increase ( emptyNote );
 
   assert.equal ( toggleTask ( entry ).type, EntryType.Note );
   assert.equal ( toggleTask ( entry ).details[0], 'Verify dimensions' );
   assert.equal ( toggleDone ( entry ).taskState, TaskState.Done );
   assert.equal ( increase ( entry ).taskState, TaskState.InProgress );
+  assert.deepEqual ( increase ( entry ).details, ['Verify dimensions'] );
   assert.equal ( decrease ( entry ).type, EntryType.Note );
+  assert.equal ( emptyTask.taskState, TaskState.Open );
+  assert.equal ( emptyTask.text, '' );
+  assert.equal ( decrease ( emptyTask ).type, EntryType.Note );
+});
+
+test('increase cycles an empty note through task states', () => {
+  let entry = {type: EntryType.Note, text: '', details: []};
+
+  assert.equal ( renderEntryLine ( entry ), '- ' );
+
+  for ( const state of [
+    TaskState.Open,
+    TaskState.InProgress,
+    TaskState.Done,
+    TaskState.Migrated,
+    TaskState.Canceled
+  ] ) {
+
+    entry = increase ( entry );
+
+    assert.equal ( entry.taskState, state );
+    assert.equal ( renderEntryLine ( entry ), `- ${({
+      [TaskState.Open]: '[ ]',
+      [TaskState.InProgress]: '[/]',
+      [TaskState.Done]: '[x]',
+      [TaskState.Migrated]: '[>]',
+      [TaskState.Canceled]: '[-]'
+    })[state]} ` );
+
+  }
 });

@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Markdown Todo Extension",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "bundle:dev"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}

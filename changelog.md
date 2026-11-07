@@ -1,4 +1,10 @@
 ### Unreleased
+- Cmd/Ctrl+Enter and Make Task now create an open task on an empty Markdown line.
+- Make Detail preserves task and typed-entry markers when converting a line to a supporting detail.
+- Added Markdown shortcuts for Increase, Decrease, and Make Detail.
+- Make Detail on a blank line now creates an empty detail under a parent or a note when no parent exists.
+- Increase on a blank line now starts with a note before cycling into task states.
+- Make Event on a blank line now inserts an event marker and focuses the entry text.
 - Added a VS Code-independent entry model, parser, renderer, quick-entry normalizer, and task transitions.
 - Added canonical list-prefixed Markdown for notes, typed entries, and all five task states, with legacy marker parsing.
 - Added Make Task/Note/Question/Important/Event/Detail and Normalize Entry commands.
