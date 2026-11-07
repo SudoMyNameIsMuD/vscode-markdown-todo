@@ -52,6 +52,34 @@
       {
         "command": "markdown.todo.increase",
         "title": "Markdown Todo: Increase"
+      },
+      {
+        "command": "markdown.todo.makeTask",
+        "title": "Markdown Todo: Make Task"
+      },
+      {
+        "command": "markdown.todo.makeNote",
+        "title": "Markdown Todo: Make Note"
+      },
+      {
+        "command": "markdown.todo.makeQuestion",
+        "title": "Markdown Todo: Make Question"
+      },
+      {
+        "command": "markdown.todo.makeImportant",
+        "title": "Markdown Todo: Make Important"
+      },
+      {
+        "command": "markdown.todo.makeEvent",
+        "title": "Markdown Todo: Make Event"
+      },
+      {
+        "command": "markdown.todo.makeDetail",
+        "title": "Markdown Todo: Make Detail"
+      },
+      {
+        "command": "markdown.todo.normalize",
+        "title": "Markdown Todo: Normalize Entry"
       }
     ],
     "keybindings": [
@@ -89,6 +117,34 @@
         {
           "command": "markdown.todo.increase",
           "when": "editorLangId == markdown"
+        },
+        {
+          "command": "markdown.todo.makeTask",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "markdown.todo.makeNote",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "markdown.todo.makeQuestion",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "markdown.todo.makeImportant",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "markdown.todo.makeEvent",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "markdown.todo.makeDetail",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "markdown.todo.normalize",
+          "when": "editorLangId == markdown"
         }
       ]
     }
@@ -98,6 +154,7 @@
     "bundle:prod": "tsex bundle --external vscode --format cjs --platform node --minify",
     "clean": "tsex clean",
     "compile": "tsex compile",
+    "test": "esbuild test/core.test.js --bundle --platform=node --format=cjs --outfile=dist/core.test.cjs && node --test dist/core.test.cjs",
     "debug": "code --extensionDevelopmentPath $PWD --inspect-extensions 9222",
     "package": "vsce package",
     "prepublishOnly": "scex -bs clean bundle:prod",

@@ -1,3 +1,9 @@
+### Unreleased
+- Added a VS Code-independent entry model, parser, renderer, quick-entry normalizer, and task transitions.
+- Added canonical list-prefixed Markdown for notes, typed entries, and all five task states, with legacy marker parsing.
+- Added Make Task/Note/Question/Important/Event/Detail and Normalize Entry commands.
+- Supporting details are represented as indented child lines attached to their parent entry.
+
 ### Version 2.0.2
 - Ensuring a pre-existing bullet symbol on the line is preserved when possible, regardless of the preferred one configured
 

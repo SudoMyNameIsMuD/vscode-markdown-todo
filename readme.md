@@ -16,14 +16,38 @@ ext install fabiospampinato.vscode-markdown-todo
 
 ## Usage
 
-It adds 4 commands to the command palette:
+It adds these commands to the command palette:
 
 ```js
 'Markdown Todo: Toggle Todo' // Toggle a todo
 'Markdown Todo: Toggle Done' // Toggle a todo as done
-'Markdown Todo: Decrease' // Decrease the "todo-ness" of a line, going: checked -> unchecked -> list -> plain line
-'Markdown Todo: Increase' // Increase the "todo-ness" of a line, going: plain line -> list -> unchecked -> checked
+'Markdown Todo: Decrease' // Move a line toward plain text through the task-state sequence
+'Markdown Todo: Increase' // Move a line toward canceled through the task-state sequence
+'Markdown Todo: Make Task' // Make the selected line an open task
+'Markdown Todo: Make Note' // Make the selected line a note
+'Markdown Todo: Make Question' // Make the selected line a question
+'Markdown Todo: Make Important' // Mark the selected line as important
+'Markdown Todo: Make Event' // Mark the selected line as an event
+'Markdown Todo: Make Detail' // Attach the selected line as a supporting detail to the preceding entry
+'Markdown Todo: Normalize Entry' // Normalize a quick-entry marker into canonical Markdown
 ```
+
+Canonical entries use Markdown list items:
+
+```markdown
+- A note
+- [ ] An open task
+- [/] An in-progress task
+- [x] A completed task
+- [>] A migrated task
+- [-] A canceled task
+- ? A question
+- ! An important entry
+- @ An event
+  › A supporting detail attached to the preceding entry
+```
+
+The parser also recognizes existing marker-only task and typed entries. Supporting details belong to a parent entry and are not standalone entries. Quick markers can be placed at the start or end of a line; trailing type markers must be separated from the text, so ordinary punctuation such as `What?` is preserved.
 
 It adds 3 shortcuts when editing a `Markdown` file:
 
