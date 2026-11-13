@@ -1,18 +1,8 @@
-# Markdown Todo
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/fabiospampinato/vscode-markdown-todo/master/resources/logo.png" width="128" alt="Logo">
-</p>
-
-Manage todo lists inside markdown files with ease.
+Manage todo lists, bullet journal entries with calendar and daily sections. 
 
 ## Install
 
-Follow the instructions in the [Marketplace](https://marketplace.visualstudio.com/items?itemName=fabiospampinato.vscode-markdown-todo), or run the following in the command palette:
-
-```sh
-ext install fabiospampinato.vscode-markdown-todo
-```
 
 ## Usage
 
@@ -71,10 +61,6 @@ On an empty line, `Cmd/Ctrl+Enter` or `Markdown Todo: Make Task` creates a new o
 }
 ```
 
-## Demo
 
-![Demo](resources/demo.gif)
 
 ## License
-
-MIT © Fabio Spampinato
